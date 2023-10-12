@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-
 import KaydedilenlerListesi from './Filmler/KaydedilenlerListesi';
+import { Switch, Route } from "react-router-dom";
+import FilmListesi from "./Filmler/FilmListesi";
+import Film from "./Filmler/Film";
 
 export default function App () {
   const [saved, setSaved] = useState([]); // Stretch: the ids of "saved" movies
@@ -12,6 +14,7 @@ export default function App () {
       axios
         .get('http://localhost:5001/api/filmler') // Burayı Postman'le çalışın
         .then(response => {
+          setMovieList(response.data)
           // Bu kısmı log statementlarıyla çalışın
           // ve burdan gelen response'u 'movieList' e aktarın
         })
@@ -22,15 +25,27 @@ export default function App () {
     FilmleriAl();
   }, []);
 
-  const KaydedilenlerListesineEkle = id => {
+  const KaydedilenlerListesineEkle = (movie) => {
+    const film = saved.find((item) => item.id == movie.id);
+    if(!film) {
+      setSaved([...saved, movie]);
+    }
+    
     // Burası esnek. Aynı filmin birden fazla kez "saved" e eklenmesini engelleyin
   };
 
   return (
     <div>
-      <KaydedilenlerListesi list={[ /* Burası esnek */]} />
-
-      <div>Bu Div'i kendi Routelarınızla değiştirin</div>
+      <KaydedilenlerListesi 
+      list={saved} />
+    <Switch>
+      <Route path= "/" exact> 
+      <FilmListesi movies= {movieList}/> 
+      </Route>
+      <Route path= "/filmler/:id" exact>
+        <Film kaydedilenlerListesineEkle = {KaydedilenlerListesineEkle}/>
+      </Route>
+    </Switch>
     </div>
   );
 }
